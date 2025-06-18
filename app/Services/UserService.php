@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Events\UserRegistered;
 use App\Mail\WelcomeUserMail;
 use App\Models\User;
 use App\Repositories\UserRepository;
@@ -27,6 +28,8 @@ class UserService
             $user->emails()->create(['email' => $email]);
         }
 
+        event(new UserRegistered($user));
+
         return $user->load('emails');
     }
 
@@ -48,12 +51,5 @@ class UserService
     public function delete(User $user): void
     {
         $this->repository->delete($user);
-    }
-
-    public function sendWelcomeEmails(User $user): void
-    {
-        foreach ($user->emails as $email) {
-            Mail::to($email->email)->send(new WelcomeUserMail($user));
-        }
     }
 }
